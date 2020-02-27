@@ -1,16 +1,14 @@
 import * as React from 'react'
-// import {SectionList, SectionListRenderItem as _SectionListRenderItem} from 'react-native'
-// TODO this typing is currently very busted.
+import {SectionList, SectionListRenderItem as _SectionListRenderItem} from 'react-native'
+
 // Desktop specific props. `selectedIndex` is used for SectionList with item
 // selecting, where the scroll should follow selected item.
 type DesktopProps = {
-  selectedIndex: number | undefined
+  selectedIndex?: number
+  disableAbsoluteStickyHeader?: boolean
 }
 
-// This resolves to 'any'
-// check https://facebook.github.io/react-native/docs/sectionlist#props for the time being
-// TODO import the type from react-native
-export type Props = any & DesktopProps // React.ComponentProps<typeof SectionList>
-// export type SectionListRenderItem<T> = _SectionListRenderItem<T>
+export type Props<T> = React.ComponentProps<SectionList<T>> & DesktopProps
+export type SectionListRenderItem<T> = _SectionListRenderItem<T>
 
-export default class extends React.Component<Props> {}
+export default class<T> extends React.Component<Props<T>> {}
