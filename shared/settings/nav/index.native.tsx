@@ -31,6 +31,11 @@ function SettingsNav(props: Props) {
         {
           data: [
             {
+              icon: 'iconfont-nav-2-crypto',
+              onClick: () => props.onTabChange(Constants.cryptoTab),
+              text: 'Crypto',
+            },
+            {
               badgeNumber: badgeNumbers.get(TabConstants.gitTab),
               icon: 'iconfont-nav-git',
               onClick: () => props.onTabChange(Constants.gitTab),
