@@ -10,6 +10,7 @@ const fakeTeamID = 'fakeTeamID'
 const store = Container.produce(Sb.createStoreWithCommon(), draftState => {
   draftState.teams = {
     ...draftState.teams,
+    addMembersWizard: {justFinished: false, teamID: fakeTeamID},
     teamMeta: new Map([[fakeTeamID, {...Constants.emptyTeamMeta, teamname: 'greenpeace.board'}]]),
   }
   draftState.config = {
@@ -18,13 +19,12 @@ const store = Container.produce(Sb.createStoreWithCommon(), draftState => {
   }
 })
 
-const fromWhereProps = Sb.createNavigator({teamID: fakeTeamID})
 const fromWhereNewProps = Sb.createNavigator({newTeam: true, teamID: fakeTeamID})
 
 const load = () => {
   Sb.storiesOf('Teams/Add member wizard', module)
     .addDecorator(story => <Sb.MockStore store={store}>{story()}</Sb.MockStore>)
-    .add('Add from where', () => <AddFromWhere {...fromWhereProps} />)
+    .add('Add from where', () => <AddFromWhere {...Sb.createNavigator({})} />)
     .add('Add from where (new team)', () => <AddFromWhere {...fromWhereNewProps} />)
     .add('Enable contacts', () => <EnableContacts onClose={Sb.action('onClose')} />)
     .add('Add by email', () => <AddEmail teamID={fakeTeamID} errorMessage="" />)
