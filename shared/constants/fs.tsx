@@ -195,6 +195,7 @@ export const makeError = (args?: _MakeErrorArgs): Types.FsError => {
   // TS Issue: https://github.com/microsoft/TypeScript/issues/26235
   const {time, error, erroredAction, retriableAction} = (args || {}) as Partial<NonNullable<_MakeErrorArgs>>
   return {
+    errorCode: error?.code || 0,
     errorMessage: !error ? 'unknown error' : error.message || JSON.stringify(error),
     erroredAction: erroredAction || placeholderAction,
     retriableAction,
@@ -1002,13 +1003,19 @@ export const sfmiInfoLoaded = (settings: Types.Settings, driverStatus: Types.Dri
 
 export const erroredActionToMessage = (
   action: any /*FsGen.Actions | EngineGen.Actions too complex*/,
-  error: string
+  errorCode: number,
+  errorMessage: string
 ): string => {
+  if (errorCode === RPCTypes.StatusCode.scdeleted) {
+    // The user is deleted. Let user know and move on.
+    return 'A user in this shared folder has deleted their account.'
+  }
+
   // We have FsError.expectedIfOffline now to take care of real offline
   // scenarios, but we still need to keep this timeout check here in case we
   // get a timeout error when we think we think we're online. In this case it's
   // likely bad network condition.
-  const errorIsTimeout = error.includes('context deadline exceeded')
+  const errorIsTimeout = errorMessage.includes('context deadline exceeded')
   const timeoutExplain = 'An operation took too long to complete. Are you connected to the Internet?'
   const suffix = errorIsTimeout ? ` ${timeoutExplain}` : ''
   switch (action.type) {
@@ -1040,7 +1047,7 @@ export const erroredActionToMessage = (
     case FsGen.deleteFile:
       return `Failed to delete file: ${Types.pathToString(action.payload.path)}.` + suffix
     case FsGen.pickAndUpload:
-      return 'Failed to upload. ' + (errorIsTimeout ? timeoutExplain : `Error: ${error}.`)
+      return 'Failed to upload. ' + (errorIsTimeout ? timeoutExplain : `Error: ${errorMessage}.`)
     case FsGen.driverEnable:
       return 'Failed to enable driver.'
     default:

@@ -22,6 +22,7 @@ export enum ProgressType {
 export type FsError = {
   readonly time: number
   readonly errorMessage: string
+  readonly errorCode: number
   readonly erroredAction: any // FsGen.Actions | EngineGen.Actions // using this type in the actions itself causes an explosive loop
   readonly retriableAction?: any // FsGen.Actions | EngineGen.Actions
 }

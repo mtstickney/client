@@ -594,8 +594,15 @@ function* loadPathMetadata(_: Container.TypedState, action: FsGen.LoadPathMetada
   }
 }
 
-const letResetUserBackIn = async ({payload: {id, username}}: FsGen.LetResetUserBackInPayload) => {
-  await RPCTypes.teamsTeamReAddMemberAfterResetRpcPromise({id, username})
+const letResetUserBackIn = async (action: FsGen.LetResetUserBackInPayload) => {
+  try {
+    return await RPCTypes.teamsTeamReAddMemberAfterResetRpcPromise({
+      id: action.payload.id,
+      username: action.payload.username,
+    })
+  } catch (error) {
+    return makeUnretriableErrorHandler(action, Constants.defaultPath)(error)
+  }
 }
 
 const updateFsBadge = (state: Container.TypedState) => {

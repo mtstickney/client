@@ -15,6 +15,15 @@ const expectedOfflineErrorCodes = [RPCTypes.StatusCode.scapinetworkerror, RPCTyp
 const makeErrorHandler = (action: TypedActions, path: Types.Path | null, retriable: boolean) => (
   error: any
 ): Array<TypedActions> => {
+  if (error?.code === RPCTypes.StatusCode.scidentifiesfailed && action.type === FsGen.subscribePath) {
+    // This is specifically to address the situation where when user tries to
+    // remove a shared TLF from their favorites but another user of the TLF has
+    // deleted their account the subscribePath call cauused from the popup will
+    // get SCIdentifiesFailed error. We can't do anything here so just move on.
+    // (Ideally we'd be able to tell it's becaue the user was deleted, but we
+    // don't have that from Go right now.)
+    return []
+  }
   if (error?.code === RPCTypes.StatusCode.sckbfsclienttimeout) {
     return [FsGen.createCheckKbfsDaemonRpcStatus()]
   }

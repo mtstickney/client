@@ -31,12 +31,12 @@ export default namedConnect(
   (stateProps, dispatchProps) => ({
     errs: [...stateProps._errors]
       .reduce(
-        (errs, [key, {errorMessage, erroredAction, retriableAction, time}]) => [
+        (errs, [key, {errorCode, errorMessage, erroredAction, retriableAction, time}]) => [
           ...errs,
           {
             dismiss: () => dispatchProps._dismiss(key),
             key,
-            msg: Constants.erroredActionToMessage(erroredAction, errorMessage),
+            msg: Constants.erroredActionToMessage(erroredAction, errorCode, errorMessage),
             onFeedback: isMobile ? () => dispatchProps._onFeedback(stateProps._loggedIn) : undefined,
             retry: retriableAction
               ? () => {
