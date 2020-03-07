@@ -94,7 +94,6 @@ type folderBranchStatusKeeper struct {
 	dirtyNodes map[NodeID]Node
 	unmerged   []*crChainSummary
 	merged     []*crChainSummary
-	quotaUsage *EventuallyConsistentQuotaUsage
 
 	fboIDBytes []byte
 
@@ -104,14 +103,12 @@ type folderBranchStatusKeeper struct {
 
 func newFolderBranchStatusKeeper(
 	config Config, nodeCache NodeCache,
-	quotaUsage *EventuallyConsistentQuotaUsage,
 	fboIDBytes []byte) *folderBranchStatusKeeper {
 	return &folderBranchStatusKeeper{
 		config:     config,
 		nodeCache:  nodeCache,
 		dirtyNodes: make(map[NodeID]Node),
 		updateChan: make(chan StatusUpdate, 1),
-		quotaUsage: quotaUsage,
 		fboIDBytes: fboIDBytes,
 	}
 }
@@ -236,6 +233,8 @@ func (fbsk *folderBranchStatusKeeper) getStatusWithoutJournaling(
 		fbs.RootBlockID = fbsk.md.Data().Dir.BlockPointer.ID.String()
 		fbs.LocalTimestamp = fbsk.md.localTimestamp
 
+		// XXX: get the right chargedTo UID here for user's too, and
+		// use config.GetQuotaUsage.
 		if fbsk.quotaUsage == nil {
 			log := fbsk.config.MakeLogger(QuotaUsageLogModule(fmt.Sprintf(
 				"status-%s", fbsk.md.TlfID())))

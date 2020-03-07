@@ -64,8 +64,6 @@ type FS struct {
 
 	platformParams PlatformParams
 
-	quotaUsage *libkbfs.EventuallyConsistentQuotaUsage
-
 	inodeLock sync.Mutex
 	nextInode uint64
 }
@@ -120,7 +118,6 @@ func NewFS(config libkbfs.Config, conn *fuse.Conn, debug bool,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	quLog := config.MakeLogger(libkbfs.QuotaUsageLogModule("FS"))
 	fs := &FS{
 		config:         config,
 		conn:           conn,
@@ -132,9 +129,7 @@ func NewFS(config libkbfs.Config, conn *fuse.Conn, debug bool,
 		notifications:  libfs.NewFSNotifications(log),
 		root:           NewRoot(),
 		platformParams: platformParams,
-		quotaUsage: libkbfs.NewEventuallyConsistentQuotaUsage(
-			config, quLog, config.MakeVLogger(quLog)),
-		nextInode: 2, // root is 1
+		nextInode:      2, // root is 1
 	}
 	fs.root.private = &FolderList{
 		fs:      fs,
@@ -414,7 +409,8 @@ func (f *FS) Statfs(ctx context.Context, req *fuse.StatfsRequest, resp *fuse.Sta
 		// reading a public TLF while logged out can fail on macOS.
 		return nil
 	}
-	_, usageBytes, _, limitBytes, err := f.quotaUsage.Get(
+	_, usageBytes, _, limitBytes, err := f.config.GetQuotaUsage(
+		session.UID).Get(
 		ctx, quotaUsageStaleTolerance/2, quotaUsageStaleTolerance)
 	if err != nil {
 		f.vlog.CLogf(ctx, libkb.VLog1, "Getting quota usage error: %v", err)
